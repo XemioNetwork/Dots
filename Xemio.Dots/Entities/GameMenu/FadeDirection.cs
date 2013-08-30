@@ -1,4 +1,4 @@
-﻿namespace Xemio.Dots.Entities
+﻿namespace Xemio.Dots.Entities.GameMenu
 {
     public enum FadeDirection
     {

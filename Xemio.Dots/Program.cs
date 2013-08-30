@@ -20,7 +20,7 @@ namespace Xemio.Dots
         {
             Form mainForm = new Form()
                             {
-                                ClientSize = new Size(800, 600),
+                                ClientSize = new Size(1280, 720),
                                 MaximizeBox = false,
                                 FormBorderStyle = FormBorderStyle.FixedSingle,
                                 StartPosition = FormStartPosition.CenterScreen,

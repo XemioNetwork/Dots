@@ -91,23 +91,16 @@ namespace Xemio.Dots.Scenes
         /// <summary>
         /// Picks a ray.
         /// </summary>
-        /// <param name="elapsed">The elapsed.</param>
-        private void TryPickRay(float elapsed)
+        private void PickRay()
         {
-            this._pickedElapsed += elapsed;
-            if (this._pickedElapsed >= 1000)
+            float entityCount = this._backgroundEnvironment.Count;
+            RayEntity ray = this._backgroundEnvironment
+                .OfType<RayEntity>()
+                .FirstOrDefault(r => this._random.NextBoolean(1.0f / entityCount));
+
+            if (ray != null)
             {
-                float entityCount = this._backgroundEnvironment.Count;
-                RayEntity ray = this._backgroundEnvironment
-                    .OfType<RayEntity>()
-                    .FirstOrDefault(r => this._random.NextBoolean(1.0f / entityCount));
-
-                if (ray != null)
-                {
-                    ray.Pick();
-                }
-
-                this._pickedElapsed = 0;
+                ray.Pick();
             }
         }
         /// <summary>
@@ -151,7 +144,13 @@ namespace Xemio.Dots.Scenes
         public override void Tick(float elapsed)
         {
             base.Tick(elapsed);
-            this.TryPickRay(elapsed);
+
+            this._pickedElapsed += elapsed;
+            if (this._pickedElapsed >= 1000)
+            {
+                this.PickRay();
+                this._pickedElapsed = 0;
+            }
 
             this._backgroundEnvironment.Tick(elapsed);
             this._uiEnvironment.Tick(elapsed);
