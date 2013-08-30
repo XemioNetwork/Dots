@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using Xemio.Dots.Scenes;
 using Xemio.GameLibrary;
 using Xemio.GameLibrary.Content.FileSystem;
+using Xemio.GameLibrary.Game.Timing;
+using Xemio.GameLibrary.Rendering;
 using Xemio.GameLibrary.Rendering.GDIPlus;
 
 namespace Xemio.Dots
@@ -16,9 +18,6 @@ namespace Xemio.Dots
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
             Form mainForm = new Form()
                             {
                                 ClientSize = new Size(800, 600),
@@ -29,16 +28,20 @@ namespace Xemio.Dots
                             };
 
             var config = XGL.Configure()
+                .FrameRate(60)
+                .BackBuffer(800, 600)
+                .Surface(mainForm)
+                .Graphics<GDIGraphicsInitializer>(
+                    SmoothingMode.AntiAliased,
+                    InterpolationMode.Bicubic)
+                .Scenes(new GameMenu())
                 .DefaultComponents()
                 .DefaultInput()
-                .FrameRate(60)
-                .FileSystem<DiskFileSystem>()
-                .Graphics<GDIGraphicsInitializer>()
-                .Scenes(new GameMenu())
-                .BackBuffer(800, 600)
+                .DisableSplashScreen()
                 .BuildConfiguration();
 
-            XGL.Run(mainForm, config);
+            XGL.Run(config);
+            Application.Run(mainForm);
         }
     }
 }

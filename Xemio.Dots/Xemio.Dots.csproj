@@ -44,21 +44,30 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="XGL, Version=0.5.73.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="XGL, Version=0.6.18.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Xemio-GameLibrary.0.5.73\lib\net40\XGL.dll</HintPath>
+      <HintPath>..\packages\Xemio-GameLibrary.0.6.18\lib\net40\XGL.dll</HintPath>
     </Reference>
-    <Reference Include="XGL.Network.Syncput">
-      <HintPath>..\packages\Xemio-GameLibrary-Syncput.1.5.0\lib\net40\XGL.Network.Syncput.dll</HintPath>
+    <Reference Include="XGL.Network.Syncput, Version=1.24.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xemio-GameLibrary-Syncput.1.24.0\lib\net40\XGL.Network.Syncput.dll</HintPath>
     </Reference>
-    <Reference Include="XGL.Rendering.GDIPlus">
-      <HintPath>..\packages\Xemio-GameLibrary-GDI-Renderer.1.6.0\lib\net40\XGL.Rendering.GDIPlus.dll</HintPath>
+    <Reference Include="XGL.Rendering.GDIPlus, Version=1.20.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xemio-GameLibrary-GDI-Renderer.1.20.0\lib\net40\XGL.Rendering.GDIPlus.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\GameMenu\SpiraleEntity.cs" />
+    <Compile Include="Entities\GameMenu\SpiraleEntityRenderer.cs" />
+    <Compile Include="Entities\UI\Button.cs" />
+    <Compile Include="Entities\UI\ButtonRenderer.cs" />
     <Compile Include="Scenes\GameMenu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Entities\GameMenu\RayEntity.cs" />
+    <Compile Include="Entities\FadeDirection.cs" />
+    <Compile Include="Entities\GameMenu\RayEntityRenderer.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -67,6 +76,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -78,6 +88,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DotsLogo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

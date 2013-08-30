@@ -1,74 +1,113 @@
-using System.Drawing;
+using System.Collections.Generic;
+using System.Linq;
+using Xemio.Dots.Entities;
+using Xemio.Dots.Entities.GameMenu;
+using Xemio.Dots.Entities.UI;
+using Xemio.Dots.Properties;
+using Xemio.GameLibrary.Common;
+using Xemio.GameLibrary.Common.Randomization;
+using Xemio.GameLibrary.Entities;
 using Xemio.GameLibrary.Game.Scenes;
+using Xemio.GameLibrary.Input;
 using Xemio.GameLibrary.Math;
+using Xemio.GameLibrary.Rendering;
 using Xemio.GameLibrary.Rendering.Fonts;
 using Xemio.GameLibrary.Rendering.Geometry;
-using Color = Xemio.GameLibrary.Rendering.Color;
-using Rectangle = Xemio.GameLibrary.Math.Rectangle;
 
 namespace Xemio.Dots.Scenes
 {
     public class GameMenu : Scene
     {
-        #region Constants
-        public const float CircleCount = 420;
+        #region Constructors
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GameMenu"/> class.
+        /// </summary>
+        public GameMenu()
+        {
+            this._random = new RandomProxy();
+
+            this._backgroundEnvironment = new EntityEnvironment();
+            this._uiEnvironment = new EntityEnvironment();
+        }
         #endregion
 
         #region Fields
-        private float _rotation;
-        private float _fogRotation;
-        
+        private readonly IRandom _random;
+        private readonly EntityEnvironment _backgroundEnvironment;
+        private readonly EntityEnvironment _uiEnvironment;
+
+        private float _pickedElapsed = 1000;
+        private ITexture _logo;
+
         private SpriteFont _font;
         #endregion
 
-        #region Methods
+        #region Private Methods
         /// <summary>
-        /// Loads the content.
+        /// Creates the rays.
         /// </summary>
-        public override void LoadContent()
+        private void CreateRays()
         {
-            this._font = SpriteFontGenerator.Create(new Font("Segoe UI", 48, FontStyle.Bold));
-            this._font.Kerning = -16;
+            Vector2 center = this.GraphicsDevice.DisplayMode.Center;
+            Vector2 spiraleCenter = new Vector2(center.X, 160);
+
+            const int rayCount = 30;
+            for (int i = 0; i < rayCount; i++)
+            {
+                this._backgroundEnvironment.Add(new RayEntity(i / (float)rayCount, spiraleCenter)
+                {
+                    RotationSpeed = this._random.Next(2, 5)
+                });
+            }
         }
         /// <summary>
-        /// Handles a game tick.
+        /// Loads the user interface.
+        /// </summary>
+        private void LoadUserInterface()
+        {
+            Vector2 position = new Vector2(this.GraphicsDevice.DisplayMode.Center.X - 129, 300);
+
+            this._uiEnvironment.Add(new Button
+            {
+                Bounds = new Rectangle(position.X, position.Y, 260, 50),
+                Font = this._font,
+                Text = "Singleplayer"
+            });
+
+            this._uiEnvironment.Add(new Button
+            {
+                Bounds = new Rectangle(position.X, position.Y + 70, 260, 50),
+                Font = this._font,
+                Text = "Multiplayer"
+            });
+
+            this._uiEnvironment.Add(new Button
+            {
+                Bounds = new Rectangle(position.X, position.Y + 140, 260, 50),
+                Font = this._font,
+                Text = "Options"
+            });
+        }
+        /// <summary>
+        /// Picks a ray.
         /// </summary>
         /// <param name="elapsed">The elapsed.</param>
-        public override void Tick(float elapsed)
+        private void TryPickRay(float elapsed)
         {
-            base.Tick(elapsed);
-
-            this._rotation += elapsed / 1200.0f;
-            this._fogRotation += elapsed / 6000.0f;
-        }
-        /// <summary>
-        /// Renders the spirale.
-        /// </summary>
-        /// <param name="position">The position.</param>
-        /// <param name="rotation">The rotation.</param>
-        /// <param name="scale">The scale.</param>
-        /// <param name="color">The color.</param>
-        private void RenderSpirale(Vector2 position, float rotation, Vector2 scale, Color color)
-        {
-            float x = position.X;
-            float y = position.Y;
-
-            float scaleX = scale.X;
-            float scaleY = scale.Y;
-            
-            const int size = 8;
-            
-            for (int i = 0; i < CircleCount; i++)
+            this._pickedElapsed += elapsed;
+            if (this._pickedElapsed >= 1000)
             {
-                Color renderColor = Color.Lerp(color, Color.Transparent, i / (float)CircleCount);
-                IBrush brush = this.Geometry.Factory.CreateSolid(renderColor);
-                
-                this.Geometry.FillEllipse(brush,
-                                          new Rectangle(
-                                              MathHelper.Sin(i * 120f - rotation) * 2 * scaleX * (i / 12f) + x,
-                                              MathHelper.Cos(i * 120f - rotation) * 2 * scaleY * (i / 12f) + y,
-                                              size * scaleX,
-                                              size * scaleY));
+                float entityCount = this._backgroundEnvironment.Count;
+                RayEntity ray = this._backgroundEnvironment
+                    .OfType<RayEntity>()
+                    .FirstOrDefault(r => this._random.NextBoolean(1.0f / entityCount));
+
+                if (ray != null)
+                {
+                    ray.Pick();
+                }
+
+                this._pickedElapsed = 0;
             }
         }
         /// <summary>
@@ -77,21 +116,56 @@ namespace Xemio.Dots.Scenes
         private void RenderLogo()
         {
             Vector2 center = this.GraphicsDevice.DisplayMode.Center;
+            Vector2 size = new Vector2(this._logo.Width, this._logo.Height);
 
-            this.RenderSpirale(new Vector2(center.X - 85, 94), this._fogRotation, new Vector2(20), new Color(0, 40, 120, 6));
-            this.RenderSpirale(new Vector2(center.X, 184), this._rotation, new Vector2(2), Color.DodgerBlue);
+            this.RenderManager.Render(this._logo, new Vector2(center.X - size.X * 0.5f, 124));
+        }
+        #endregion
 
-            const string header = "DOTS";
-            Vector2 size = this._font.MeasureString(header);
+        #region Methods
+        /// <summary>
+        /// Loads the content.
+        /// </summary>
+        public override void LoadContent()
+        {
+            this.CreateRays();
+            
+            this._font = new SpriteFont("Segoe UI", 12)
+                             {
+                                 Kerning = -5
+                             };
 
-            this.RenderManager.Render(this._font, "DOTS", new Vector2(center.X - size.X * 0.5f, 146), Color.Black);
-            this.RenderManager.Render(this._font, "DOTS", new Vector2(center.X - size.X * 0.5f, 144));
+            this._backgroundEnvironment.Add(new SpiraleEntity()
+                                                {
+                                                    Position = new Vector2(this.GraphicsDevice.DisplayMode.Center.X, 160)
+                                                });
+
+            this.LoadUserInterface();
+
+            this._logo = this.Content.Load<ITexture>(Resources.DotsLogo.ToStream());
+        }
+        /// <summary>
+        /// Handles a game tick.
+        /// </summary>
+        /// <param name="elapsed">The elapsed.</param>
+        public override void Tick(float elapsed)
+        {
+            base.Tick(elapsed);
+            this.TryPickRay(elapsed);
+
+            this._backgroundEnvironment.Tick(elapsed);
+            this._uiEnvironment.Tick(elapsed);
         }
         /// <summary>
         /// Handles a game render request.
         /// </summary>
         public override void Render()
         {
+            this.GraphicsDevice.Clear(Color.Black);
+
+            this._backgroundEnvironment.Render();
+            this._uiEnvironment.Render();
+
             this.RenderLogo();
             base.Render();
         }
